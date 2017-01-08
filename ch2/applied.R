@@ -94,3 +94,56 @@ pdf("mpgVScylinders.pdf")
 plot(cylinders, mpg, xlab="cylinders", ylab="mpg", main="mpg VS cylinders")
 dev.off()
 # less cylinders, more mpg
+
+# 10
+# 10.(a)
+library(MASS)
+Boston
+?Boston
+dim(Boston) # 506 rows and 14 columns
+fix(Boston)
+
+# 10.(b)
+Boston$chas = as.factor(Boston$chas)
+pdf("PriceVSCharlesRiver.pdf")
+plot(Boston$chas, Boston$medv, xlab="chas", ylab="medv", main="Price VS Charles River")
+dev.off()
+# pricer is higher is the house bounds river
+pdf("PriceVSDistance.pdf")
+plot(Boston$dis, Boston$medv, xlab="dis", ylab="medv", main="Price VS Distance")
+dev.off()
+# the farther the distance, the higher the price
+
+# 10.(c)
+pdf("CrimeVSDistance.pdf")
+plot(Boston$dis, Boston$crim, xlab="dis", ylab="crime", main="Crime VS Distance")
+dev.off()
+# the closer it is to work area, the higher the per capita crime rate
+
+# 10.(d)
+summary(Boston)
+range(Boston$crim)
+range(Boston$tax)
+range(Boston$ptratio)
+
+# 10.(e)
+summary(Boston$chas) # 35 suburbs bound the Charles River
+
+# 10.(f)
+median(Boston$ptratio) # the median of pupil-teacher ratio is 19.05
+
+# 10.(g)
+min(Boston$medv) 
+# lowest median value of owner-occupied homes is 5
+nrow(Boston[Boston$medv==min(Boston$medv) ,])
+# two suburbs have the same lowest median value of 5
+Boston[Boston$medv==5,]
+#        crim zn indus chas   nox    rm age    dis rad tax ptratio  black lstat medv
+# 399 38.3518  0  18.1    1 0.693 5.453 100 1.4896  24 666    20.2 396.90 30.59    5
+# 406 67.9208  0  18.1    1 0.693 5.683 100 1.4254  24 666    20.2 384.97 22.98    5
+
+# 10.(h)
+nrow(subset(Boston, Boston$rm>7)) # 64 suburbs
+nrow(subset(Boston, Boston$rm>8)) # 13 suburbs
+Boston[Boston$rm>8,]
+summary(Boston[Boston$rm>8,])
