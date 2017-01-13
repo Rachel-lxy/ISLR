@@ -5,10 +5,6 @@ date: "January 12, 2017"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
 ## 8.(a)
 ```{r}
 Auto = read.csv("Auto.csv", header=T, na.strings="?")
