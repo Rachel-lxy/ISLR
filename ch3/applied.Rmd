@@ -1,0 +1,399 @@
+---
+title: "Chapter 3 Applied Exercises"
+author: "Xinyu Li"
+date: "January 12, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 8.(a)
+```{r}
+Auto = read.csv("Auto.csv", header=T, na.strings="?")
+Auto = na.omit(Auto)
+summary(Auto)
+attach(Auto)
+Auto.lm.fit = lm(mpg~horsepower, data=Auto)
+summary(Auto.lm.fit)
+```
+i.
+The p-value corresponding to F-statistic is nearly 0, therefore, there is a relationship between horsepower and mpg.
+
+ii.
+RSE is 4.906, and mean value for the response is 23.44592, indicating a percentage error of roughly 21%. R-squared is 0.6059, indicating that 60.59% of the variance in mpg is explained by horsepower.
+```{r} 
+mean(mpg, na.rm=T)
+4.906/mean(mpg, na.rm=T)*100.0
+summary(Auto.lm.fit)$r.sq
+```
+
+iii.
+Coefficient of horsepower = -0.158<0, indicating the relationship is negative.
+
+iv.
+```{r} 
+predict(Auto.lm.fit, data.frame(horsepower=c(98)), interval="confidence")
+predict(Auto.lm.fit, data.frame(horsepower=c(98)), interval="prediction")
+```
+
+## 8.(b)
+```{r}
+plot(horsepower, mpg, xlab="horsepower", ylab="mpg")
+abline(Auto.lm.fit, lwd=2, col="red")
+```
+
+## 8.(c)
+From the residuals, we can see there is non-linearity between the predictor and response.
+```{r}
+par(mfrow=c(2,2))
+plot(Auto.lm.fit)
+```
+
+## 9.(a)
+```{r}
+pairs(Auto)
+```
+
+## 9.(b)
+```{r}
+cor(Auto[-9])
+```
+
+## 9.(c)
+```{r}
+Auto.lm.fit2 = lm(mpg~.-name, data=Auto)
+summary(Auto.lm.fit2)
+```
+
+i.
+The p-value corresponding to F-statistic is nearly 0, therefore, there is a relationship between the predictors and response.
+
+ii.
+From the individual p-value, we can see that displacement, weight, year and origin have a statistically significant relationship to the response.
+
+iii.
+The coefficient for the year suggests a positive relationship to mpg.
+
+## 9.(d)
+From the residuals plot, there is a discernable curve pattern, indicating this might not be an accurate fit. From the leverage plot, we can see that there are some points with high leverage. There are possible outliers as there are points with studentized residuals greater than 3. 
+```{r}
+(ncol(Auto)-1+1)/nrow(Auto)
+par(mfrow=c(2,2))
+plot(Auto.lm.fit2)
+```
+
+## 9.(e)
+From the correlation matrix, I chose two highest correlated pairs to create interaction effects. From the individual p-value, we can find that the interaction between displacement and weight is statistically significant while the interaction between cylinders and displacement is not.
+```{r}
+Auto.lim.fit3 = lm(mpg~cylinders*displacement+displacement*weight)
+summary(Auto.lim.fit3)
+```
+
+## 9.(f)
+Log transformation of mpg yields a better model fitting as it has a higher R-squared, and in the residuals plot, the pattern is not that obvious.
+```{r}
+Auto.lm.fit4 = lm(sqrt(mpg)~.-name, data=Auto)
+summary(Auto.lm.fit4)
+par(mfrow=c(2,2))
+plot(Auto.lm.fit4)
+```
+
+## 10.(a)
+```{R}
+library(ISLR)
+attach(Carseats)
+Car.lm.fit = lm(Sales~Price+Urban+US, data=Carseats)
+summary(Car.lm.fit)
+```
+
+## 10.(b)
+Price: the p-value which is close to 0 indicates that there is a statistically significant relationship between price and sales. If price increases $1 while other variables are held fixed, sales decrease roughly 54 units.
+
+Urban: p-value is very large, indicating there is no statistically significant relationship between the location of the store and its sales.
+
+US: the p-value which is close to 0 indicates that there is a statistically significant relationship between whether the store is in US or not and sales. If the store is in US, the sales increases roughly 1,201 units.
+
+## 10.(c)
+Sales = 13.043469 - 0.054459Price - 0.021916UrbanYes + 1.200573USYes 
+
+## 10.(d)
+As p-value corresponding to F-statistic are close to 0, we can reject the null hypothesis for Price and US.
+
+## 10.(e)
+```{r}
+Car.lm.fit2 = lm(Sales~Price+US, data=Carseats)
+summary(Car.lm.fit2)
+```
+
+## 10.(f)
+As the two models have very similar RSE and R-squared, they fit the data similarly, while the model in (e) is slightly better.
+
+## 10.(g)
+```{r}
+confint(Car.lm.fit2, level=0.95)
+```
+
+## 10.(h)
+From the studentized residuals plot, we can see that all studentized residuals are between -3 and 3, therefore there are no obvious outliers.
+From the leverage plot, we can see that there are some points with high leverage (leverage statistic much greater than the mean 0.0075).
+```{r}
+plot(predict(Car.lm.fit2), rstudent(Car.lm.fit2))
+(2+1)/nrow(Carseats) # mean leverage statistic
+plot(hatvalues(Car.lm.fit2))
+par(mfrow=c(2,2))
+plot(Car.lm.fit2)
+```
+
+## 11.(a)
+Coefficient estimate = 1.9939, standard error = 0.1065, t-statistic = 18.73, p-value is close to 0, indicating that there is a positive relationship between x and y, and the null hypothesis is rejected.
+```{r}
+set.seed(1)
+x=rnorm(100)
+y=2*x + rnorm(100)
+lm.fit = lm(y~x+0)
+summary(lm.fit)
+```
+
+## 11.(b)
+Coefficient estimate = 0.39111, standard error = 0.02089, t-statistic = 18.73, p-value is close to 0, indicating that there is a positive relationship between y and x, and the null hypothesis is rejected.
+```{r}
+lm.fit2 = lm(x~y+0)
+summary(lm.fit2)
+```
+
+## 11.(c)
+The t-statistic and p-value are the same. The product of coefficients in (a) and (b) is close to 1.
+
+## 11.(d)
+The result is 18.73, which is the same as the t-statistic obtained in (a) and (b).
+```{r}
+sqrt(length(x)-1)*sum(x*y)/(sqrt(sum(x^2)*sum(y^2)-(sum(x*y))^2))
+```
+
+## 11.(e)
+If we change the positions of x and y, we will obtain the same result of t-statistic using the formula in (d).
+
+## 11.(f)
+Both t-statistic are 18.556.
+```{r}
+lm.fit3 = lm(y~x)
+summary(lm.fit3)
+lm.fit4 = lm(x~y)
+summary(lm.fit4)
+```
+
+## 12.(a)
+When the sum of squared x values equals the sum of squared y values.
+
+## 12.(b)
+Coefficient of X is 1.9939 and coefficient of Y is 0.39111.
+```{r}
+set.seed(1)
+X = rnorm(100)
+Y = 2*X + rnorm(100)
+summary(lm(Y~X+0))
+summary(lm(X~Y+0))
+```
+
+## 12.(c)
+Coefficients of both regressions are -0.02148.
+```{r}
+set.seed(1)
+X = rnorm(100)
+Y = -sample(X, 100)
+summary(lm(Y~X+0))
+summary(lm(X~Y+0))
+```
+
+## 13.(a)
+```{r}
+set.seed(1)
+x = rnorm(100)
+```
+
+## 13.(b)
+```{r}
+eps = rnorm(100, mean=0, sd=0.25)
+```
+
+## 13.(c)
+The length of y is 100, beta0 = -1 and beta1 = 0.5.
+```{r}
+y = -1+0.5*x+eps
+length(y)
+```
+
+## 13.(d)
+x and y appear to have a linear relationship.
+```{r}
+plot(x, y)
+```
+
+## 13.(e)
+beta0 estimate = -1.00942 and beta1 estimate = 0.49973. The p-value corresponding to F-statistic indicates that there is a relationship between x and y, and the coefficient estimates are very close to the true values.
+```{r}
+lm.fit = lm(y~x)
+summary(lm.fit)
+```
+
+## 13.(f)
+```{r}
+plot(x, y)
+abline(lm.fit, col="red")
+abline(-1, 0.5, col="yellow")
+legend(-1.5, legend=c("model fit","population"), col=c("red","yellow"), lwd=3)
+```
+
+## 13.(g)
+The model fit improves a little as RSE decreases slightly and R-squared increases slightly. However, the p-value of x^2 indicates that there is no statistically significant relationship between x^2 and y.
+```{r}
+lm.fit2 = lm(y~x+I(x^2))
+summary(lm.fit2)
+```
+
+## 13.(j)
+Three confidence intervals should all center around the same numbers. The less noisy data should have narrower confidence intervals while the noisier data should have wider confidence intervals.
+```{r}
+confint(lm.fit)
+```
+
+## 14.(a)
+y = 2+2x1+0.3x2. beta0 = 2, beta1 = 2 and beta2 = 0.3.
+```{r}
+set.seed(1)
+x1 = runif(100)
+x2 = 0.5*x1+rnorm(100)/10
+y = 2+2*x1+0.3*x2+rnorm(100)
+```
+
+## 14.(b)
+There appears to be a positive linear relationship between x1 and x2.
+```{r}
+plot(x1, x2)
+```
+
+## 14.(c)
+beta0 estimate = 2.1305, beta1 estimate = 1.4396 and beta2 estimate = 1.0097. beta0 estimate is close to true beta0 while beta1/beta2 are not accurate estimates of true values. The p-values are too large for confidence level 5%, therefore we cannot reject the null hypothesis.
+```{r}
+lm.fit = lm(y~x1+x2)
+summary(lm.fit)
+```
+
+## 14.(d)
+This is a slightly better model fit compared to (c) based on the slightly improved RSE and R-squared. beta1 is close to true value. The p-value is close to 0, and we can reject the null hypothesis.
+```{r}
+lm.fit2 = lm(y~x1)
+summary(lm.fit2)
+```
+
+## 14.(e)
+This is the worst model fit among the three. beta1 is far from true value. The p-value is close to 0, and we can reject the null hypothesis.
+```{r}
+lm.fit3 = lm(y~x2)
+summary(lm.fit3)
+```
+
+## 14.(f)
+We can see that if we use only one of x1 and x2 to fit the model, they both appear to have statistically significant relationship with y. As they are collinear, it is hard to clearly identify their effects when predict y using both of them.
+
+## 14.(g)
+For model 1 and model 3, the newly added point becomes a high-leverage point. For model 2, it becomes an outlier.
+```{r}
+x1 = c(x1, 0.1)
+x2 = c(x2, 0.8)
+y = c(y, 6)
+lm.fit4 = lm(y~x1+x2)
+summary(lm.fit4)
+par(mfrow=c(2,2))
+plot(lm.fit4)
+lm.fit5 = lm(y~x1)
+summary(lm.fit5)
+par(mfrow=c(2,2))
+plot(lm.fit5)
+lm.fit6 = lm(y~x2)
+summary(lm.fit6)
+par(mfrow=c(2,2))
+plot(lm.fit6)
+```
+
+## 15.(a)
+All predictors have a statistically significant association with the response except chas.
+```{r}
+library(MASS)
+Boston$chas <- as.factor(Boston$chas)
+attach(Boston)
+lm.zn = lm(crim~zn, data=Boston)
+summary(lm.zn) # yes
+lm.indus = lm(crim~indus, data=Boston)
+summary(lm.indus) # yes
+lm.chas = lm(crim~chas, data=Boston)
+summary(lm.chas) # no
+lm.nox = lm(crim~nox, data=Boston)
+summary(lm.nox) # yes
+lm.rm = lm(crim~rm, data=Boston)
+summary(lm.rm) # yes
+lm.age = lm(crim~age, data=Boston)
+summary(lm.age) # yes
+lm.dis = lm(crim~dis, data=Boston)
+summary(lm.dis) # yes
+lm.rad = lm(crim~rad, data=Boston)
+summary(lm.rad) # yes
+lm.tax = lm(crim~tax, data=Boston)
+summary(lm.tax) # yes
+lm.ptratio = lm(crim~ptratio, data=Boston)
+summary(lm.ptratio) # yes
+lm.black = lm(crim~black, data=Boston)
+summary(lm.black) # yes
+lm.lstat = lm(crim~lstat, data=Boston)
+summary(lm.lstat) # yes
+lm.medv = lm(crim~medv, data=Boston)
+summary(lm.medv) # yes
+```
+
+## 15.(b)
+For zn, nox, dis, rad, black, lstat, and medv, we can reject the null hypothesis.
+```{r}
+lm.all = lm(crim~., data=Boston)
+summary(lm.all)
+```
+
+## 15.(c)
+The coefficient of nox is nearly 31 in univariate regression model and -10 in multivariate regression model.
+```{r}
+x <- c(coef(lm.zn)[2], coef(lm.indus)[2], coef(lm.chas)[2], coef(lm.nox)[2],
+       coef(lm.rm)[2], coef(lm.age)[2], coef(lm.dis)[2], coef(lm.rad)[2],
+       coef(lm.tax)[2], coef(lm.ptratio)[2], coef(lm.black)[2], 
+       coef(lm.lstat)[2], coef(lm.medv)[2])
+y <- coef(lm.all)[2:14]
+plot(x, y)
+```
+
+## 15.(d)
+```{r}
+lm.zn.3 = lm(crim~poly(zn,3), data=Boston)
+summary(lm.zn.3) # 1st, 2nd
+lm.indus.3 = lm(crim~poly(indus,3), data=Boston)
+summary(lm.indus.3) # 1st, 2nd, 3rd
+lm.nox.3 = lm(crim~poly(nox,3), data=Boston)
+summary(lm.nox.3) # 1st, 2nd, 3rd
+lm.rm.3 = lm(crim~poly(rm,3), data=Boston)
+summary(lm.rm.3) # 1st, 2nd
+lm.age.3 = lm(crim~poly(age,3), data=Boston)
+summary(lm.age.3) # 1st, 2nd, 3rd
+lm.dis.3 = lm(crim~poly(dis,3), data=Boston)
+summary(lm.dis.3) # 1st, 2nd, 3rd
+lm.rad.3 = lm(crim~poly(rad,3), data=Boston)
+summary(lm.rad.3) # 1st, 2nd
+lm.tax.3 = lm(crim~poly(tax,3), data=Boston)
+summary(lm.tax.3) # 1st, 2nd
+lm.ptratio.3 = lm(crim~poly(ptratio,3), data=Boston)
+summary(lm.ptratio.3) # 1st, 2nd, 3rd
+lm.black.3 = lm(crim~poly(black,3), data=Boston)
+summary(lm.black.3) # 1st
+lm.lstat.3 = lm(crim~poly(lstat,3), data=Boston)
+summary(lm.lstat.3) # 1st, 2nd
+lm.medv.3 = lm(crim~poly(medv,3), data=Boston)
+summary(lm.medv.3) # 1st, 2nd, 3rd
+```
