@@ -1,0 +1,151 @@
+---
+title: "Chapter 5 Lab"
+author: "Xinyu Li"
+date: "January 23, 2017"
+output: html_document
+---
+
+## 5.3.1 The Validation Set Approach
+
+Split the data into training and validation sets
+```{r}
+library(ISLR)
+set.seed(1)
+train = sample(392, 196)
+attach(Auto)
+```
+
+Estimated test MSE for linear regression
+```{r cars}
+lm.fit = lm(mpg~horsepower, data=Auto, subset=train)
+mean((mpg-predict(lm.fit, Auto))[-train]^2)
+```
+
+Estimated test MSE for quadratic regression
+```{r}
+lm.fit2 = lm(mpg~poly(horsepower,2), data=Auto, subset=train)
+mean((mpg-predict(lm.fit2, Auto))[-train]^2)
+```
+
+Estimated test MSE for cubic regression
+```{r}
+lm.fit3 = lm(mpg~poly(horsepower,3), data=Auto, subset=train)
+mean((mpg-predict(lm.fit3, Auto))[-train]^2)
+```
+
+Choose a different training set
+```{r}
+set.seed(2)
+train = sample(392, 196)
+lm.fit = lm(mpg~horsepower, data=Auto, subset=train)
+mean((mpg-predict(lm.fit, Auto))[-train]^2)
+lm.fit2 = lm(mpg~poly(horsepower,2), data=Auto, subset=train)
+mean((mpg-predict(lm.fit2, Auto))[-train]^2)
+lm.fit3 = lm(mpg~poly(horsepower,3), data=Auto, subset=train)
+mean((mpg-predict(lm.fit3, Auto))[-train]^2)
+```
+
+## 5.3.2 Leave-One-Out Cross-Validation
+
+glm() without family argument is the same as lm(), which performs linear regression
+```{r}
+glm.fit = glm(mpg~horsepower, data=Auto)
+coef(glm.fit)
+lm.fit = lm(mpg~horsepower, data=Auto)
+coef(lm.fit)
+```
+
+LOOCV using cv.glm()
+```{r}
+library(boot)
+glm.fit = glm(mpg~horsepower, data=Auto)
+cv.err = cv.glm(Auto, glm.fit) # by default using LOOCV if K is not specified
+cv.err$delta
+```
+
+Repeat LOOCV for polynomial degree from 1 to 5
+```{r}
+cv.error = rep(0, 5)
+for (i in 1:5) {
+  glm.fit = glm(mpg~poly(horsepower,i), data=Auto)
+  cv.error[i] = cv.glm(Auto, glm.fit)$delta[1]
+}
+cv.error
+```
+
+## 5.3.3 k-Fold Cross-Validation
+
+Choose the optimal degree of polynomials using 10-fold cross-validation
+The first delta is the standard k-fold CV estimate, the second delta is a bias-corrected estimate
+```{r}
+set.seed(17)
+cv.error.10 = rep(0,10)
+for (i in 1:10) {
+  glm.fit = glm(mpg~poly(horsepower,i), data=Auto)
+  cv.error.10[i] = cv.glm(Auto, glm.fit, K=10)$delta[1]
+}
+cv.error.10
+```
+
+## 5.3.4 The Bootstrap
+
+- Estimating the Accuracy of a Statistic of Interest
+
+Function to calculate $\alpha$
+```{r}
+alpha.fn = function(data, index) {
+  X = data$X[index]
+  Y = data$Y[index]
+  return ((var(Y)-cov(X,Y))/(var(X)+var(Y)-2*cov(X,Y)))
+}
+```
+
+Estimate $\alpha$ using all 100 observations
+```{r}
+dim(Portfolio)
+alpha.fn(Portfolio, 1:100)
+```
+
+Estimate $\alpha$ using randomly sampled 100 observations 
+```{r}
+set.seed(1)
+alpha.fn(Portfolio, sample(100,100,replace=T))
+```
+
+Estimate $\alpha$ using bootstrap R = 1000
+```{r}
+boot(Portfolio, alpha.fn, R=1000)
+```
+
+- Estimating the Accuracy of a Linear Regression Model
+
+```{r}
+boot.fn = function(data, index) {
+  return (coef(lm(mpg~horsepower, data=data, subset=index)))
+}
+boot.fn(Auto, 1:392)
+```
+
+Bootstrap estimates for the intercept and slope terms by randomly sampling from among the observations with replacement
+```{r}
+set.seed(1)
+boot.fn(Auto, sample(392,392,replace=T))
+boot.fn(Auto, sample(392,392,replace=T))
+```
+
+Compute the standard errors of 1,000 bootstrap estimates for the intercept and slope terms
+Linear relationship is not a good fit for mpg and horsepower, therefore the variance is different as the variance estimates of linear regression depend on certain assumptions
+```{r}
+boot(Auto, boot.fn, R=1000)
+summary(lm(mpg~horsepower, data=Auto))$coef
+```
+
+Quadratic regression
+```{r}
+boot.fn = function(data, index) {
+  return (coef(lm(mpg~horsepower+I(horsepower^2), data=data, subset=index)))
+}
+set.seed(1)
+boot(Auto, boot.fn, R=1000)
+summary(lm(mpg~horsepower+I(horsepower^2), data=Auto))$coef
+```
