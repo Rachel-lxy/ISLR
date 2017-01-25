@@ -197,6 +197,9 @@ cv.error.10</code></pre>
 </div>
 <div id="the-bootstrap" class="section level2">
 <h2>5.3.4 The Bootstrap</h2>
+<ul>
+<li>Estimating the Accuracy of a Statistic of Interest</li>
+</ul>
 <p>Function to calculate <span class="math inline">\(\alpha\)</span></p>
 <pre class="r"><code>alpha.fn = function(data, index) {
   X = data$X[index]
@@ -225,6 +228,65 @@ alpha.fn(Portfolio, sample(100,100,replace=T))</code></pre>
 ## Bootstrap Statistics :
 ##      original        bias    std. error
 ## t1* 0.5758321 -7.315422e-05  0.08861826</code></pre>
+<ul>
+<li>Estimating the Accuracy of a Linear Regression Model</li>
+</ul>
+<pre class="r"><code>boot.fn = function(data, index) {
+  return (coef(lm(mpg~horsepower, data=data, subset=index)))
+}
+boot.fn(Auto, 1:392)</code></pre>
+<pre><code>## (Intercept)  horsepower 
+##  39.9358610  -0.1578447</code></pre>
+<p>Bootstrap estimates for the intercept and slope terms by randomly sampling from among the observations with replacement</p>
+<pre class="r"><code>set.seed(1)
+boot.fn(Auto, sample(392,392,replace=T))</code></pre>
+<pre><code>## (Intercept)  horsepower 
+##  38.7387134  -0.1481952</code></pre>
+<pre class="r"><code>boot.fn(Auto, sample(392,392,replace=T))</code></pre>
+<pre><code>## (Intercept)  horsepower 
+##  40.0383086  -0.1596104</code></pre>
+<p>Compute the standard errors of 1,000 bootstrap estimates for the intercept and slope terms Linear relationship is not a good fit for mpg and horsepower, therefore the variance is different as the variance estimates of linear regression depend on certain assumptions</p>
+<pre class="r"><code>boot(Auto, boot.fn, R=1000)</code></pre>
+<pre><code>## 
+## ORDINARY NONPARAMETRIC BOOTSTRAP
+## 
+## 
+## Call:
+## boot(data = Auto, statistic = boot.fn, R = 1000)
+## 
+## 
+## Bootstrap Statistics :
+##       original      bias    std. error
+## t1* 39.9358610  0.02972191 0.860007896
+## t2* -0.1578447 -0.00030823 0.007404467</code></pre>
+<pre class="r"><code>summary(lm(mpg~horsepower, data=Auto))$coef</code></pre>
+<pre><code>##               Estimate  Std. Error   t value      Pr(&gt;|t|)
+## (Intercept) 39.9358610 0.717498656  55.65984 1.220362e-187
+## horsepower  -0.1578447 0.006445501 -24.48914  7.031989e-81</code></pre>
+<p>Quadratic regression</p>
+<pre class="r"><code>boot.fn = function(data, index) {
+  return (coef(lm(mpg~horsepower+I(horsepower^2), data=data, subset=index)))
+}
+set.seed(1)
+boot(Auto, boot.fn, R=1000)</code></pre>
+<pre><code>## 
+## ORDINARY NONPARAMETRIC BOOTSTRAP
+## 
+## 
+## Call:
+## boot(data = Auto, statistic = boot.fn, R = 1000)
+## 
+## 
+## Bootstrap Statistics :
+##         original        bias     std. error
+## t1* 56.900099702  6.098115e-03 2.0944855842
+## t2* -0.466189630 -1.777108e-04 0.0334123802
+## t3*  0.001230536  1.324315e-06 0.0001208339</code></pre>
+<pre class="r"><code>summary(lm(mpg~horsepower+I(horsepower^2), data=Auto))$coef</code></pre>
+<pre><code>##                     Estimate   Std. Error   t value      Pr(&gt;|t|)
+## (Intercept)     56.900099702 1.8004268063  31.60367 1.740911e-109
+## horsepower      -0.466189630 0.0311246171 -14.97816  2.289429e-40
+## I(horsepower^2)  0.001230536 0.0001220759  10.08009  2.196340e-21</code></pre>
 </div>
 
 
